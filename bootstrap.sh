@@ -128,7 +128,7 @@ start() {
         cd keycloak-spring-demo
     else
         cd keycloak-spring-demo
-        git update
+        git up
     fi
 
 
