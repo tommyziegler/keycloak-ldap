@@ -51,7 +51,7 @@ start() {
 	ldapadd -v -h localhost:389 -c -x -D cn=admin,dc=example,dc=com -w ${LDAPADMIN_PASS} -f ldap_sample.ldif
 
 	## Keycloak Server
-	docker run -d --name=${CONTAINER_NAME} -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=${KEYCLOAK_PASS} -p 8080:8080 --link ldap:ldap jboss/keycloak
+	docker run -d --name=${KC_CONTAINER_NAME} -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=${KEYCLOAK_PASS} -p 8080:8080 --link ldap:ldap jboss/keycloak
 	sleep 7
 
 	${DOCKER_EXEC} /opt/jboss/keycloak/bin/kcadm.sh config credentials --realm master --server ${KEYCLOAK_AUTH_URL} --user admin --password ${KEYCLOAK_PASS}
