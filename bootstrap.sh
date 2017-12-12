@@ -10,7 +10,7 @@ set -e
 # configuration
 #
 
-CUSTOMER="Opitz Consulting"
+CUSTOMER=OpitzConsulting
 KC_REALM_NAME=opitzconsulting
 KC_CONTAINER_NAME=oc_keycloak
 
@@ -37,31 +37,31 @@ EOF
 
 # start keycloak server
 start() {
-	KEYCLOAK_PASS=admin
-	LDAPADMIN_PASS=password
+    KEYCLOAK_PASS=admin
+    LDAPADMIN_PASS=password
 
-	echo "Keycloak Admin Password: $KEYCLOAK_PASS"
-	echo "LDAP Password: $LDAPADMIN_PASS"
+    echo "Keycloak Admin Password: $KEYCLOAK_PASS"
+    echo "LDAP Password: $LDAPADMIN_PASS"
 
 
-	# ## LDAP Server
-	docker run -e LDAP_DOMAIN=example.com -e LDAP_ORGANIZATION="${CUSTOMER}" -e LDAP_ROOTPASS=${LDAPADMIN_PASS} --name ldap -d -p 389:389 nickstenning/slapd
-	sleep 2
-	# Import Sample into LDAP Server
-	ldapadd -v -h localhost:389 -c -x -D cn=admin,dc=example,dc=com -w ${LDAPADMIN_PASS} -f ldap_sample.ldif
+    # ## LDAP Server
+    docker run -e LDAP_DOMAIN=example.com -e LDAP_ORGANIZATION=${CUSTOMER} -e LDAP_ROOTPASS=${LDAPADMIN_PASS} --name ldap -d -p 389:389 nickstenning/slapd
+    sleep 2
+    # Import Sample into LDAP Server
+    ldapadd -v -h localhost:389 -c -x -D cn=admin,dc=example,dc=com -w ${LDAPADMIN_PASS} -f ldap_sample.ldif
 
-	## Keycloak Server
-	docker run -d --name=${KC_CONTAINER_NAME} -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=${KEYCLOAK_PASS} -p 8080:8080 --link ldap:ldap jboss/keycloak
-	sleep 7
+    ## Keycloak Server
+    docker run -d --name=${KC_CONTAINER_NAME} -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=${KEYCLOAK_PASS} -p 8080:8080 --link ldap:ldap jboss/keycloak
+    sleep 7
 
-	${DOCKER_EXEC} /opt/jboss/keycloak/bin/kcadm.sh config credentials --realm master --server ${KEYCLOAK_AUTH_URL} --user admin --password ${KEYCLOAK_PASS}
+    ${DOCKER_EXEC} /opt/jboss/keycloak/bin/kcadm.sh config credentials --realm master --server ${KEYCLOAK_AUTH_URL} --user admin --password ${KEYCLOAK_PASS}
 
-	# Create Keycloak Realm
-	${DOCKER_EXEC} /opt/jboss/keycloak/bin/kcadm.sh create realms -s realm=${KC_REALM_NAME} -s enabled=true -o
-	# LDAP User Storage Provider
-	${DOCKER_EXEC} /opt/jboss/keycloak/bin/kcadm.sh create components -r ${KC_REALM_NAME} \
+    # Create Keycloak Realm
+    ${DOCKER_EXEC} /opt/jboss/keycloak/bin/kcadm.sh create realms -s realm=${KC_REALM_NAME} -s enabled=true -o
+    # LDAP User Storage Provider
+    ${DOCKER_EXEC} /opt/jboss/keycloak/bin/kcadm.sh create components -r ${KC_REALM_NAME} \
                     -s id=ldap-userstorageprovider-01 \
-                    -s 'name='${CUSTOMER}' LDAP' \
+                    -s 'name="'${CUSTOMER}' LDAP"' \
                     -s providerId=ldap \
                     -s providerType=org.keycloak.storage.UserStorageProvider \
                     -s 'config.priority=["1"]' \
@@ -123,16 +123,21 @@ start() {
                     -s 'redirectUris=["http://localhost:'${TEST_CLIENT_PORT}'/*"]' \
                     -s 'publicClient=true'
 
-    if [ ! -d directory/path to a directory ] ; then
+    if [ ! -d keycloak-spring-demo ] ; then
         git clone https://github.com/tommyziegler/keycloak-spring-demo.git
+        cd keycloak-spring-demo
+    else
+        cd keycloak-spring-demo
+        git update
     fi
 
-    cd keycloak-spring-demo
+
+
     mvn clean install spring-boot:run \
                     -DskipTests \
-		    -Dserver.port=${TEST_CLIENT_PORT} \
-		    -Dkeycloak.realm=${KC_REALM_NAME} \
-		    -Dkeycloak.resource=${TEST_CLIENT_ID}
+            -Dserver.port=${TEST_CLIENT_PORT} \
+            -Dkeycloak.realm=${KC_REALM_NAME} \
+            -Dkeycloak.resource=${TEST_CLIENT_ID}
     # Via Docker (first Test DNS Route to different Docker Names \ Images)
     #docker run -it --rm --name keycloak-spring-demo -v "$PWD":/usr/src/mymaven -w /usr/src/mymaven maven:3-jdk-8 mvn install spring-boot:run -DskipTests -Dserver.port=${TEST_CLIENT_PORT} -Dkeycloak.realm=${KC_REALM_NAME} -Dkeycloak.resource=${TEST_CLIENT_ID}
 }
@@ -140,13 +145,12 @@ start() {
 
 # stop keycloak server
 stop() {
-  docker stop ${CONTAINER_NAME}
-  docker rm ${CONTAINER_NAME}
-  docker stop ldap
-  docker rm ldap
-  #docker stop keycloak-spring-demo
-  #docker rm keycloak-spring-demo
-  # 
+    docker stop ${KC_CONTAINER_NAME}
+    docker rm ${KC_CONTAINER_NAME}
+    docker stop ldap
+    docker rm ldap
+    #docker stop keycloak-spring-demo
+    #docker rm keycloak-spring-demo
 }
 
 #
@@ -154,8 +158,8 @@ stop() {
 #
 
 if [[ ${#} -lt 1 ]]; then
-  print_usage
-  exit 2
+    print_usage
+    exit 2
 fi
 
 ACTION=${1}
