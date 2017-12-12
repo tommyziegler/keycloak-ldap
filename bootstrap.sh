@@ -45,7 +45,7 @@ start() {
 
 
 	# ## LDAP Server
-	docker run -e LDAP_DOMAIN=example.com -e LDAP_ORGANIZATION=${CUSTOMER} -e LDAP_ROOTPASS=${LDAPADMIN_PASS} --name ldap -d -p 389:389 nickstenning/slapd
+	docker run -e LDAP_DOMAIN=example.com -e LDAP_ORGANIZATION="${CUSTOMER}" -e LDAP_ROOTPASS=${LDAPADMIN_PASS} --name ldap -d -p 389:389 nickstenning/slapd
 	sleep 2
 	# Import Sample into LDAP Server
 	ldapadd -v -h localhost:389 -c -x -D cn=admin,dc=example,dc=com -w ${LDAPADMIN_PASS} -f ldap_sample.ldif
